@@ -1,0 +1,87 @@
+provider "aws" {
+  region = var.region
+}
+
+# -----------------------------
+# VPC (official AWS module)
+# -----------------------------
+module "vpc" {
+  source  = "terraform-aws-modules/vpc/aws"
+  version = "5.0.0"
+
+  name = "${var.cluster_name}-vpc"
+  cidr = "10.0.0.0/16"
+
+  azs             = ["${var.region}a", "${var.region}b"]
+  public_subnets  = ["10.0.1.0/24", "10.0.2.0/24"]
+  private_subnets = ["10.0.3.0/24", "10.0.4.0/24"]
+
+  enable_nat_gateway = true
+  single_nat_gateway = true
+
+  tags = {
+    "kubernetes.io/cluster/${var.cluster_name}" = "shared"
+  }
+}
+
+# -----------------------------
+# EKS Cluster (official AWS module)
+# -----------------------------
+module "eks" {
+  source  = "terraform-aws-modules/eks/aws"
+  version = "20.0.0"
+
+  cluster_name    = var.cluster_name
+  cluster_version = "1.29"
+
+  cluster_endpoint_public_access = true
+
+  vpc_id     = module.vpc.vpc_id
+  subnet_ids = module.vpc.private_subnets
+
+  enable_irsa = true
+
+  eks_managed_node_groups = {
+    default = {
+      desired_size = var.desired_size
+      min_size     = var.min_size
+      max_size     = var.max_size
+
+      instance_types = var.instance_types
+      capacity_type  = "ON_DEMAND"
+    }
+  }
+
+  tags = {
+    Environment = "dev"
+    Terraform   = "true"
+  }
+}
+
+# -----------------------------
+# EBS CSI Driver Addon
+# -----------------------------
+resource "aws_eks_addon" "ebs_csi" {
+  cluster_name             = module.eks.cluster_name
+  addon_name               = "aws-ebs-csi-driver"
+  addon_version            = "v1.32.0-eksbuild.1"
+  resolve_conflicts        = "OVERWRITE"
+  service_account_role_arn = module.eks.irsa_role_arn
+}
+
+# -----------------------------
+# StorageClass for EBS
+# -----------------------------
+resource "kubernetes_storage_class" "ebs_sc" {
+  metadata {
+    name = "ebs-sc"
+  }
+
+  provisioner          = "ebs.csi.aws.com"
+  volume_binding_mode  = "WaitForFirstConsumer"
+  reclaim_policy       = "Delete"
+
+  parameters = {
+    type = "gp3" # can be gp2, io1, etc.
+  }
+}
