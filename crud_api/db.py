@@ -18,6 +18,7 @@ def get_connection():
         dbname=os.environ["DB_NAME"],
         user=os.environ["DB_USER"],
         password=os.environ["DB_PASSWORD"]
+        sslmode="require"
     )
 
 def wait_for_db(max_retries=10, delay=3):
