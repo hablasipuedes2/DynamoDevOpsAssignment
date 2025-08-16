@@ -1,11 +1,12 @@
 import psycopg2
 import os
 import time
+import sys
 from psycopg2 import OperationalError
 
 # --- Read DB config from environment ---
 DB_NAME = os.getenv("DB_NAME")
-DB_USER = os.getenv("DB_USER")       # Provided via env or Kubernetes Secret
+DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_HOST = os.getenv("DB_HOST")
 DB_PORT = os.getenv("DB_PORT")
@@ -25,12 +26,12 @@ def wait_for_db(max_retries=10, delay=3):
         try:
             conn = get_connection()
             conn.close()
-            print("✅ Database is ready.")
+            sys.stdout.write("Database is ready.")
             return
         except OperationalError:
-            print(f"⏳ Database not ready (attempt {attempt+1}/{max_retries})...")
+            sys.stderr.write(f"Database not ready (attempt {attempt+1}/{max_retries})...")
             time.sleep(delay)
-    raise Exception("❌ Database is not ready after retries.")
+    raise Exception("Database is not ready after retries.")
 
 def create_table():
     """Create 'users' table if it doesn't exist."""
