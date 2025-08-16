@@ -43,4 +43,17 @@ spec:
             secretKeyRef:
               name: db-credentials
               key: DB_PASSWORD
-
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          failureThreshold: 3
