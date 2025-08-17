@@ -1,6 +1,5 @@
-# Variables
 AWS_REGION := eu-north-1
-ECR_REPO := 123456789012.dkr.ecr.us-east-1.amazonaws.com/flask-crud
+ECR_REPO := 533046675336.dkr.ecr.eu-north-1.amazonaws.com/valya-lab
 IMAGE_TAG := latest
 
 # Default target

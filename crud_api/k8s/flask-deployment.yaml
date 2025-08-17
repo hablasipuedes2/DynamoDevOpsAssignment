@@ -4,7 +4,7 @@ metadata:
   name: flask-api
   namespace: flask-api
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: flask-api
@@ -16,7 +16,7 @@ spec:
       serviceAccountName: flask-api-sa
       containers:
       - name: flask-api
-        image: your-dockerhub-username/flask-crud:latest
+        image: 533046675336.dkr.ecr.eu-north-1.amazonaws.com/valya-lab:latest
         ports:
         - containerPort: 5000
         env:
