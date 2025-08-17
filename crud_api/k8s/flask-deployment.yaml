@@ -2,8 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: flask-api
+  namespace: flask-api
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: flask-api
@@ -12,6 +13,7 @@ spec:
       labels:
         app: flask-api
     spec:
+      serviceAccountName: flask-api-sa
       containers:
       - name: flask-api
         image: your-dockerhub-username/flask-crud:latest

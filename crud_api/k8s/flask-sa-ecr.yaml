@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: flask-api-sa
+  namespace: flask-api
+  annotations:
+    # Replace with the IAM Role ARN you created in Terraform
+    eks.amazonaws.com/role-arn: arn:aws:iam::<YOUR_ACCOUNT_ID>:role/flask-api-role
