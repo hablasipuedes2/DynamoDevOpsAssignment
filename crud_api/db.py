@@ -2,7 +2,6 @@ import psycopg2
 import os
 import time
 import sys
-from psycopg2 import OperationalError
 
 # --- Read DB config from environment ---
 DB_NAME = os.getenv("DB_NAME")
@@ -29,7 +28,7 @@ def wait_for_db(max_retries=10, delay=3):
             conn.close()
             sys.stdout.write("Database is ready.")
             return
-        except OperationalError:
+        except psycopg2.OperationalError:
             sys.stderr.write(f"Database not ready (attempt {attempt+1}/{max_retries})...")
             time.sleep(delay)
     raise Exception("Database is not ready after retries.")
