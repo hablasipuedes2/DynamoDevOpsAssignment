@@ -5,7 +5,7 @@ variable "region" {
 
 variable "cluster_name" {
   description = "EKS cluster name"
-  default     = "my-eks-cluster"
+  default     = "crud-api-eks-cluster"
 }
 
 variable "desired_size" {
@@ -21,5 +21,5 @@ variable "max_size" {
 }
 
 variable "instance_types" {
-  default = ["t3.medium"]
+  default = ["t3.micro"]
 }

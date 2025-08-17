@@ -2,12 +2,9 @@ provider "aws" {
   region = var.region
 }
 
-# -----------------------------
-# VPC (official AWS module)
-# -----------------------------
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "5.0.0"
+  version = "6.0.1"
 
   name = "${var.cluster_name}-vpc"
   cidr = "10.0.0.0/16"
@@ -24,15 +21,12 @@ module "vpc" {
   }
 }
 
-# -----------------------------
-# EKS Cluster (official AWS module)
-# -----------------------------
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "20.0.0"
+  version = "21.1.0"
 
   cluster_name    = var.cluster_name
-  cluster_version = "1.29"
+  cluster_version = "1.30"
 
   cluster_endpoint_public_access = true
 
@@ -58,9 +52,6 @@ module "eks" {
   }
 }
 
-# -----------------------------
-# EBS CSI Driver Addon
-# -----------------------------
 resource "aws_eks_addon" "ebs_csi" {
   cluster_name             = module.eks.cluster_name
   addon_name               = "aws-ebs-csi-driver"
@@ -69,9 +60,6 @@ resource "aws_eks_addon" "ebs_csi" {
   service_account_role_arn = module.eks.irsa_role_arn
 }
 
-# -----------------------------
-# StorageClass for EBS
-# -----------------------------
 resource "kubernetes_storage_class" "ebs_sc" {
   metadata {
     name = "ebs-sc"
@@ -82,6 +70,19 @@ resource "kubernetes_storage_class" "ebs_sc" {
   reclaim_policy       = "Delete"
 
   parameters = {
-    type = "gp3" # can be gp2, io1, etc.
+    type = "gp3"
+  }
+}
+
+resource "helm_release" "sealed_secrets" {
+  name       = "sealed-secrets"
+  namespace  = "kube-system"
+  repository = "https://bitnami-labs.github.io/sealed-secrets"
+  chart      = "sealed-secrets"
+  version    = "2.15.3" # check latest
+
+  set {
+    name  = "fullnameOverride"
+    value = "sealed-secrets-controller"
   }
 }
