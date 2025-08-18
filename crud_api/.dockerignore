@@ -1,1 +1,4 @@
 Dockerfile
+Makefile
+/k8s/*
+/terraform/*
