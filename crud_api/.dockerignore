@@ -1,4 +1,6 @@
 Dockerfile
 Makefile
-/k8s/*
-/terraform/*
+k8s
+terraform
+.dockerignore
+.gitignore
