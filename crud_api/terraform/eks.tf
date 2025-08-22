@@ -32,6 +32,8 @@ module "eks" {
       min_size     = 2
       max_size     = 2
       desired_size = 2
+
+      iam_role_arn = aws_iam_role.flask_api_role.arn
     }
   }
 
