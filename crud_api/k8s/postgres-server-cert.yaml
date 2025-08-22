@@ -1,0 +1,16 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: postgres-server
+  namespace: flask-api
+spec:
+  secretName: postgres-server-tls
+  duration: 8760h
+  renewBefore: 720h
+  commonName: postgres
+  dnsNames:
+    - postgres
+    - postgres.flask-api.svc.cluster.local
+  issuerRef:
+    name: selfsigned-issuer
+    kind: Issuer
