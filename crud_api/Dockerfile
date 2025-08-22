@@ -38,8 +38,9 @@ COPY --chown=appuser:appgroup --from=base /app /app/
 # Set PATH so Python uses the virtualenv
 ENV PATH="/app/venv/bin:$PATH"
 
+WORKDIR /app
+
 # Expose the Flask port
 EXPOSE 5000
 
-# Run the application with Gunicorn
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
