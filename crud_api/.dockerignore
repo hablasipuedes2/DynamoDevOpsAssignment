@@ -3,4 +3,3 @@ Makefile
 k8s
 terraform
 .dockerignore
-.gitignore
