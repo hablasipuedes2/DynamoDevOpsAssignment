@@ -12,3 +12,6 @@ terraform {
 provider "aws" {
   region = var.region
 }
+
+# TLS needed for the thumbprint
+provider "tls" {}

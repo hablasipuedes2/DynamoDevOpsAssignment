@@ -9,5 +9,5 @@ variable "cluster_name" {
 }
 
 variable "instance_types" {
-  default = ["t3.micro"]
+  default = ["t3.medium"]
 }

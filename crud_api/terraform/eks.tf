@@ -8,13 +8,13 @@ module "eks" {
   endpoint_public_access = true
 
   addons = {
-    coredns = {}
+    coredns    = {}
     kube-proxy = {}
     vpc-cni = {
       before_compute = true
     }
-    aws-ebs-csi-driver = {
-      most_recent = true
+    eks-pod-identity-agent = {
+      before_compute = true
     }
   }
 
@@ -29,13 +29,9 @@ module "eks" {
     default = {
       instance_types = var.instance_types
 
-      min_size     = 6
-      max_size     = 6
-      desired_size = 6
-
-      iam_role_additional_policies = {
-        AmazonEBSCSIDriverPolicy = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
-      }
+      min_size     = 2
+      max_size     = 2
+      desired_size = 2
     }
   }
 
@@ -43,4 +39,22 @@ module "eks" {
     Environment = "dev"
     Terraform   = "true"
   }
+}
+
+resource "aws_eks_pod_identity_association" "ebs_csi_driver" {
+  cluster_name    = module.eks.cluster_name
+  namespace       = "kube-system"
+  service_account = "ebs-csi-controller-sa"
+  role_arn        = aws_iam_role.ebs_csi_driver.arn
+}
+
+resource "aws_eks_addon" "ebs_csi_driver" {
+  cluster_name             = module.eks.cluster_name
+  addon_name               = "aws-ebs-csi-driver"
+  addon_version            = "v1.47.0-eksbuild.1"
+  service_account_role_arn = aws_iam_role.ebs_csi_driver.arn
+
+  depends_on = [
+    module.eks
+  ]
 }
