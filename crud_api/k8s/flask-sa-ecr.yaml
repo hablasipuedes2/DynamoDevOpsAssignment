@@ -4,5 +4,4 @@ metadata:
   name: flask-api-sa
   namespace: flask-api
   annotations:
-    # Replace with the IAM Role ARN you created in Terraform
     eks.amazonaws.com/role-arn: arn:aws:iam::533046675336:role/flask-api-role

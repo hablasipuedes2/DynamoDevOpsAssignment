@@ -13,40 +13,71 @@ spec:
       labels:
         app: postgres
     spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: topology.kubernetes.io/zone
-                    operator: In
-                    values:
-                      - eu-north-1a
-                      - eu-north-1b
+      securityContext:
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+      initContainers:
+      - name: init-pg-perms
+        image: busybox
+        command: ["sh", "-c", "mkdir -p /data/postgres && chown -R 999:999 /data/postgres"]
+        volumeMounts:
+          - name: postgres-data
+            mountPath: /data
       containers:
       - name: postgres
         image: postgres:15
         ports:
         - containerPort: 5432
-        envFrom:
-        - configMapRef:
-            name: db-config
-        - secretRef:
-            name: db-credentials
+        env:
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: POSTGRES_PASSWORD
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: db-config
+              key: POSTGRES_DB
+        - name: PGDATA
+          value: /var/lib/postgresql/data
+        command: ["docker-entrypoint.sh"]
+        args:
+          - "postgres"
+          - "-c"
+          - "ssl=on"
+          - "-c"
+          - "ssl_cert_file=/var/lib/postgresql/certs/tls.crt"
+          - "-c"
+          - "ssl_key_file=/var/lib/postgresql/certs/tls.key"
         readinessProbe:
           exec:
-            command: ["pg_isready", "-U", "$(DB_USER)"]
+            command: ["pg_isready", "-U", "$(POSTGRES_USER)"]
           initialDelaySeconds: 10
           periodSeconds: 5
         livenessProbe:
           exec:
-            command: ["pg_isready", "-U", "$(DB_USER)"]
+            command: ["pg_isready", "-U", "$(POSTGRES_USER)"]
           initialDelaySeconds: 30
           periodSeconds: 10
         volumeMounts:
-        - name: postgres-data
-          mountPath: /var/lib/postgresql/data
+          - name: postgres-data
+            mountPath: /var/lib/postgresql/data
+            subPath: postgres
+          - name: postgres-tls
+            mountPath: /var/lib/postgresql/certs
+            readOnly: true
       volumes:
-      - name: postgres-data
-        persistentVolumeClaim:
-          claimName: postgres-pvc
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: postgres-pvc
+        - name: postgres-tls
+          secret:
+            secretName: postgres-server-tls
+            defaultMode: 0600

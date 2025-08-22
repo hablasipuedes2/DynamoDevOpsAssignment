@@ -4,6 +4,5 @@ metadata:
   name: db-config
   namespace: flask-api
 data:
-  DB_HOST: postgres
-  DB_NAME: mydatabase
-  DB_PORT: "5432"
+  POSTGRES_DB: flask-api-db
+  POSTGRES_DB_PORT: "5432"
